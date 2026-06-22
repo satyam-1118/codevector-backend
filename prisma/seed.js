@@ -10,7 +10,6 @@ function getRandomCategory(categories) {
 
 async function main() {
     console.log("🌱 Seed started...");
-    const products = [];
     const categories = [
     "Electronics",
     "Fashion",
@@ -22,6 +21,7 @@ async function main() {
     "Grocery",
   ];
 
+  const products = [];
   for (let i = 0; i < 10; i++) {
 
     const product = {
@@ -37,8 +37,12 @@ async function main() {
     products.push(product);
 
 }
+const result = await prisma.product.createMany({
+    data: products
+});
 
-console.log(products);
+console.log(result);
+
 }
 
 main()
