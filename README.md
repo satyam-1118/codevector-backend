@@ -1,4 +1,4 @@
-# CodeVector Backend Assignment
+# CodeVector Backend 
 
 A backend application built using **Node.js, Express.js, Prisma ORM, and PostgreSQL** that allows users to browse a large product catalog with efficient cursor-based pagination and category filtering.
 
