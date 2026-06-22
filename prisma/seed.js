@@ -3,61 +3,81 @@ const { faker } = require("@faker-js/faker");
 
 const prisma = new PrismaClient();
 
-function getRandomCategory(categories) {
-  const randomIndex = Math.floor(Math.random() * categories.length);
-  return categories[randomIndex];
+const categories = [
+  "Electronics",
+  "Fashion",
+  "Books",
+  "Home",
+  "Sports",
+  "Beauty",
+  "Toys",
+  "Grocery",
+];
+
+function getRandomCategory() {
+  return categories[Math.floor(Math.random() * categories.length)];
+}
+
+function getRandomDate() {
+  const now = new Date();
+  const past = new Date();
+  past.setFullYear(now.getFullYear() - 2);
+
+  return faker.date.between({
+    from: past,
+    to: now,
+  });
 }
 
 async function main() {
-  console.log("🌱 Seed started...");
+  console.log("🌱 Seed Started...");
+  console.time("Seed Time");
 
-  // Delete old data
+  // Delete existing data
   await prisma.product.deleteMany();
-  console.log("🗑 Old products deleted...");
 
-  // Test values
+  // Change these after testing
   const TOTAL_PRODUCTS = 200000;
   const BATCH_SIZE = 1000;
 
-  const categories = [
-    "Electronics",
-    "Fashion",
-    "Books",
-    "Home",
-    "Sports",
-    "Beauty",
-    "Toys",
-    "Grocery",
-  ];
+  let totalInserted = 0;
 
   for (let batch = 0; batch < TOTAL_PRODUCTS / BATCH_SIZE; batch++) {
     const products = [];
 
     for (let i = 0; i < BATCH_SIZE; i++) {
-      const product = {
-        name: faker.commerce.productName(),
-        category: getRandomCategory(categories),
-        price: Number(faker.commerce.price()),
-      };
+      const createdAt = getRandomDate();
 
-      products.push(product);
+      products.push({
+        name: faker.commerce.productName(),
+        category: getRandomCategory(),
+        price: Number(faker.commerce.price()),
+        created_at: createdAt,
+        updated_at: faker.date.between({
+          from: createdAt,
+          to: new Date(),
+        }),
+      });
     }
 
     const result = await prisma.product.createMany({
       data: products,
     });
 
+    totalInserted += result.count;
+
     console.log(
-      `✅ Batch ${batch + 1} completed - Inserted ${result.count} products`
+      `✅ Batch ${batch + 1}/${TOTAL_PRODUCTS / BATCH_SIZE} | ${result.count} inserted`
     );
   }
 
-  console.log("🎉 Seeding completed successfully!");
+  console.log(`🎉 Total Inserted : ${totalInserted}`);
+  console.timeEnd("Seed Time");
 }
 
 main()
-  .catch((error) => {
-    console.error("❌ Error:", error);
+  .catch((err) => {
+    console.error(err);
   })
   .finally(async () => {
     await prisma.$disconnect();
